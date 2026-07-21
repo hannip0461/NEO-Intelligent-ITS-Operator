@@ -151,3 +151,9 @@ Certbot과 Let's Encrypt를 이용해 TLS 인증서를 발급하고 HTTP 요청�
 - `/neo`, `/neo/lineage`, `/neo/logs`, `/neo/health`, `/neo/settings`는 모두 HTTPS 200을 반환했다.
 - 계보 판단 경로의 규칙·판단·권고 정렬과 선택 동작, 모바일 390px 무가로넘침, 브라우저 콘솔 오류 0건을 확인했다.
 - 백엔드, Neo4j, Qdrant, NEMI 데이터와 컨테이너는 변경하지 않았다.
+
+## 17. 2026-07-22 프론트엔드 빌드 의존성 보안 갱신
+
+- 개발 전용 간접 의존성 `brace-expansion`을 호환 범위 내 보안 패치 `2.1.2`로 잠금파일에서 갱신했다.
+- 로컬과 AWS Docker 빌드에서 `npm audit` 0건 및 production build 통과를 확인했다.
+- 릴리스 `20260722_002315`로 프론트엔드만 교체했으며, 백엔드와 데이터 저장소는 변경하지 않았다.
