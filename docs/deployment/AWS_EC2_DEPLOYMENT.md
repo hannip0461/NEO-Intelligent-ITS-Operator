@@ -143,3 +143,11 @@ Certbot과 Let's Encrypt를 이용해 TLS 인증서를 발급하고 HTTP 요청�
 - `/neo`, `/neo/lineage`, `/neo/logs`, `/neo/health`, `/neo/settings`, 현장 증거 이미지 5종은 모두 HTTPS 200을 반환했다.
 - NEO, Neo4j, NEMI는 정상이며 선택 기능인 Ollama/LLM만 미실행 상태다.
 - 브라우저 콘솔 오류, FastAPI 오류 로그, 프론트엔드 5xx 응답은 모두 0건이었다.
+
+## 16. 2026-07-22 최종 UI 승인본 갱신
+
+- 비공개 체크포인트 커밋 `b835020`의 승인된 프론트엔드만 새 이미지로 빌드해 교체했다.
+- 기존 프론트엔드 소스와 Docker 이미지는 릴리스 `20260722_000344` 롤백본으로 보존했다.
+- `/neo`, `/neo/lineage`, `/neo/logs`, `/neo/health`, `/neo/settings`는 모두 HTTPS 200을 반환했다.
+- 계보 판단 경로의 규칙·판단·권고 정렬과 선택 동작, 모바일 390px 무가로넘침, 브라우저 콘솔 오류 0건을 확인했다.
+- 백엔드, Neo4j, Qdrant, NEMI 데이터와 컨테이너는 변경하지 않았다.
