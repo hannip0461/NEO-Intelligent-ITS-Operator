@@ -133,3 +133,13 @@ Certbot과 Let's Encrypt를 이용해 TLS 인증서를 발급하고 HTTP 요청�
 - 전체 Vue 라우트 및 FastAPI 프록시 응답 확인
 
 ![HTTPS로 배포된 NEO Operator](record_images/18_https_neo.png)
+
+## 15. 2026-07-21 승인본 갱신
+
+- 사용자 승인 완료된 NEO Operator 프론트엔드와 FastAPI를 새 이미지로 빌드해 교체했다.
+- 배포 전 로컬 검증은 프론트엔드 production build, 백엔드 `150 passed, 9 subtests passed`를 통과했다.
+- Neo4j 스키마는 중복 노드 0개, 필수 제약 9/9개로 확인했다.
+- AWS에서 실시간 판단을 실행해 새 Decision Package와 `20 nodes / 28 relationships` 계보를 저장·재조회했다.
+- `/neo`, `/neo/lineage`, `/neo/logs`, `/neo/health`, `/neo/settings`, 현장 증거 이미지 5종은 모두 HTTPS 200을 반환했다.
+- NEO, Neo4j, NEMI는 정상이며 선택 기능인 Ollama/LLM만 미실행 상태다.
+- 브라우저 콘솔 오류, FastAPI 오류 로그, 프론트엔드 5xx 응답은 모두 0건이었다.
