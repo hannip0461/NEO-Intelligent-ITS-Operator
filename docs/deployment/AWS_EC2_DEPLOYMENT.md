@@ -157,3 +157,15 @@ Certbot과 Let's Encrypt를 이용해 TLS 인증서를 발급하고 HTTP 요청�
 - 개발 전용 간접 의존성 `brace-expansion`을 호환 범위 내 보안 패치 `2.1.2`로 잠금파일에서 갱신했다.
 - 로컬과 AWS Docker 빌드에서 `npm audit` 0건 및 production build 통과를 확인했다.
 - 릴리스 `20260722_002315`로 프론트엔드만 교체했으며, 백엔드와 데이터 저장소는 변경하지 않았다.
+
+## 18. 2026-07-30 Bedrock Nova 2 Lite 판단 설명 배포
+
+- EC2에 `neo-bedrock-explanation-ec2` 인스턴스 역할을 연결하고 Nova 2 Lite Global inference profile 호출에 필요한 최소 권한만 부여했다.
+- AWS 런타임을 `bedrock`, `ap-northeast-2`, `global.amazon.nova-2-lite-v1:0`, 최대 출력 384토큰으로 설정했다.
+- 기존 Neo4j, NEMI, Qdrant는 유지하고 `neo-api`, `frontend` 이미지만 새로 빌드해 교체했다.
+- `/api/v1/integrations/llm/live-explain` 전용 Nginx 경로에 IP당 분당 6회, 순간 3회, 128KB 본문, HTTP 429, 120초 upstream 제한을 적용했다.
+- `INC-9902` 실제 설명 요청에서 NEO 판단 `requires_operator_ack`를 유지한 한국어 답변을 확인했다.
+- 실제 응답은 입력 4,485토큰, 출력 151토큰, 지연 1,735ms였고 `allow_decision_override=false`를 유지했다.
+- 공개 UI의 새 판단 실행, 판단 설명 패널과 Amazon Nova 2 Lite 안내를 확인했다.
+- 설명 API 요청 2건은 모두 HTTP 200이었고 배포 후 API 로그의 Traceback, ERROR, Exception은 0건이었다.
+- 검증 후 전송용 S3 버킷, 임시 SSH 키, EC2 임시 파일과 CloudShell 전용 SSH 허용 규칙을 모두 제거했다.

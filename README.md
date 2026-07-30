@@ -28,6 +28,7 @@ FastAPI는 입력을 Canonical Fact로 정규화해 NEO Rule KB에 전달합니�
 | 규칙 추론 | NEO Rule KB + ATMS + CF 기반 다단계 파생 Fact 생성 |
 | 관계 근거 | Neo4j 실제 노드·관계로 Fact → Rule → Decision 계보 조회 |
 | 문서 근거 | NEMI VectorDB RAG로 SOP·정책·사고 이력 검색 |
+| 판단 설명 | 현재 Decision Package와 연결 근거를 읽기 전용으로 설명 |
 | 운영 검토 | 판단 재실행, 근거 선택, 조치 준비, 오탐 요청과 감사 이력 제공 |
 | 배포 | Docker Compose, AWS EC2, Nginx, HTTPS 자동 갱신 구성 |
 
@@ -37,8 +38,9 @@ FastAPI는 입력을 Canonical Fact로 정규화해 NEO Rule KB에 전달합니�
 2. FastAPI가 입력을 정규화하고 NEO 판단을 실행합니다.
 3. NEO가 Rule KB, ATMS, CF를 적용해 Decision Package를 생성합니다.
 4. Neo4j에서 판단 계보를 조회하고 NEMI에서 관련 문서 근거를 검색합니다.
-5. 관제자가 근거를 검토한 뒤 VMS 조치를 준비하거나 오탐 처리를 요청합니다.
-6. 판단·근거·조치 상태를 감사 ID와 함께 보존하고 이력 화면에서 재현합니다.
+5. 필요하면 설명 모델이 현재 판단과 연결 근거를 읽기 전용으로 설명합니다.
+6. 관제자가 근거를 검토한 뒤 VMS 조치를 준비하거나 오탐 처리를 요청합니다.
+7. 판단·근거·조치 상태를 감사 ID와 함께 보존하고 이력 화면에서 재현합니다.
 
 최종 조치는 자동 송출하지 않습니다. NEO가 판단하고 운영자가 검토·승인하는 경계를 유지합니다.
 
@@ -52,9 +54,13 @@ flowchart LR
     D --> E["Decision Package"]
     E --> F["Neo4j Graph RAG<br/>판단 계보"]
     E --> G["NEMI VectorDB RAG<br/>문서 근거"]
+    E --> J["설명 모델<br/>읽기 전용"]
     E --> H["Vue 3 Operator UI"]
     F --> H
     G --> H
+    F --> J
+    G --> J
+    J --> H
     H --> I["운영자 검토 · 조치 · 감사"]
 ```
 
@@ -66,7 +72,7 @@ flowchart LR
 | NEMI | 프로젝트 내부 명칭의 VectorDB RAG, 운영 문서 근거 검색 |
 | Qdrant | NEMI 임베딩과 유사도 검색 저장소 |
 | Vue 3 + TypeScript | 사건 선택, 근거 검토, 조치와 감사 이력 UI |
-| LLM (선택) | 읽기 전용 설명 생성, NEO 판단 변경 권한 없음 |
+| 설명 모델 (선택) | 로컬 Gemma4 또는 AWS Bedrock Nova 2 Lite로 설명, NEO 판단 변경 권한 없음 |
 
 ## 구현 상세
 
@@ -89,18 +95,28 @@ flowchart LR
 - 운영자 승인 전에는 VMS 조치를 자동 송출하지 않습니다.
 - 사건, 판단, 선택 근거, 조치 상태와 감사 ID를 함께 저장해 이후 재현할 수 있습니다.
 
+### 읽기 전용 판단 설명
+
+- 현재 Decision Package, Neo4j 판단 관계와 NEMI 문서 근거만 설명 입력으로 사용합니다.
+- 로컬·GPU 환경은 Gemma4, AWS 데모는 Amazon Nova 2 Lite를 사용합니다.
+- 설명 모델은 NEO가 정한 판단, 우선순위, 신뢰도와 권고 조치를 변경할 수 없습니다.
+
 ## 데모 확인
 
 - [AWS 운영 데모](https://3-38-33-156.sslip.io/neo)
 - 관제, 계보, 이력, 상태와 정책 화면을 하나의 운영 흐름으로 확인할 수 있습니다.
+- 판단 카드의 `판단 설명`에서 Amazon Nova 2 Lite의 한국어 설명을 확인할 수 있습니다.
 
 ## 배포와 검증
 
 - AWS EC2 Ubuntu에서 프론트엔드, FastAPI, NEMI, Neo4j, Qdrant 컨테이너 실행
 - 호스트 Nginx가 HTTPS 요청을 내부 프론트엔드 `127.0.0.1:8080`으로 전달
 - FastAPI, NEMI, Neo4j, Qdrant 포트는 loopback에만 바인딩
+- EC2 인스턴스 역할로 Amazon Bedrock Nova 2 Lite 호출
+- 설명 API에 IP당 분당 6회, 128KB 본문, HTTP 429 제한 적용
 - `/neo`, `/neo/lineage`, `/neo/logs`, `/neo/health`, `/neo/settings` 응답 확인
 - HTTP → HTTPS 전환과 Certbot 인증서 자동 갱신 모의시험 확인
+- 2026-07-30 실제 Bedrock 한국어 설명 응답 확인: 입력 4,485토큰, 출력 151토큰, 1,735ms
 
 ## 산출물
 
