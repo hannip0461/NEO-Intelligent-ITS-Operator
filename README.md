@@ -4,17 +4,34 @@
 
 > `NEO`는 이 프로젝트에서 명명한 자체 규칙 추론 엔진입니다. Rule KB, ATMS(Assumption-based Truth Maintenance System), CF(Certainty Factor)를 결합해 판단합니다.
 
-> 핵심 규칙 엔진과 Rule KB는 비공개 자산입니다. 이 저장소에는 운영 화면, 설계 계약과 AWS 배포 기록만 공개합니다.
+> 핵심 규칙 엔진과 Rule KB는 비공개 자산입니다. 이 저장소에는 운영 화면, 설계 계약, 작업공간 안내와 AWS 배포 기록만 공개합니다.
 
 - **AWS 데모:** https://3-38-33-156.sslip.io/neo
 
 ## 주요 화면
 
-| 실시간 관제와 운영 검토 | Neo4j XAI 추론 계보 |
-| --- | --- |
-| ![실시간 관제 화면](docs/readme/dashboard.png) | ![Neo4j 추론 계보 화면](docs/readme/lineage.png) |
-| **판단·조치 이력** | **핵심 서비스 상태** |
-| ![판단 이력 화면](docs/readme/logs.png) | ![시스템 상태 화면](docs/readme/health.png) |
+<table>
+  <thead>
+    <tr>
+      <th align="center" width="50%">실시간 관제와 운영 검토</th>
+      <th align="center" width="50%">Neo4j XAI 추론 계보</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td align="center" width="50%"><img src="docs/readme/dashboard.png" alt="실시간 관제 화면" width="100%"></td>
+      <td align="center" width="50%"><img src="docs/readme/lineage.png" alt="Neo4j 추론 계보 화면" width="100%"></td>
+    </tr>
+    <tr>
+      <th align="center" width="50%">판단·조치 이력</th>
+      <th align="center" width="50%">핵심 서비스 상태</th>
+    </tr>
+    <tr>
+      <td align="center" width="50%"><img src="docs/readme/logs.png" alt="판단 이력 화면" width="100%"></td>
+      <td align="center" width="50%"><img src="docs/readme/health.png" alt="시스템 상태 화면" width="100%"></td>
+    </tr>
+  </tbody>
+</table>
 
 ## 프로젝트 개요
 
@@ -123,9 +140,9 @@ flowchart LR
 | 문서 | 내용 |
 | --- | --- |
 | [AWS EC2 배포 기록](docs/deployment/AWS_EC2_DEPLOYMENT.md) | 인스턴스 생성부터 Docker Compose, HTTPS 적용까지의 화면 기록 |
-| [AWS EC2 배포 기록 PDF](docs/deployment/NEO_AWS_DEPLOYMENT_RECORD.pdf) | 제출·열람용 배포 과정 PDF |
-| [Canonical Fact Schema](docs/design/CANONICAL_FACT_SCHEMA.md) | 외부 입력 정규화 계약 |
-| [Decision Package Schema](docs/design/DECISION_PACKAGE_SCHEMA.md) | 판단·근거·버전 추적 계약 |
+| [Canonical Fact 표준 구조](docs/design/CANONICAL_FACT_SCHEMA.md) | 외부 입력을 표준 Fact로 정규화하는 필드와 검증 규칙 |
+| [Decision Package 표준 구조](docs/design/DECISION_PACKAGE_SCHEMA.md) | 판단, 근거, 신뢰도와 버전을 기록하는 필드와 검증 규칙 |
+| [작업공간 안내서](docs/WORKSPACE_GUIDE.md) | 개발 기준, 실행 입력과 내부 작업 순서 안내 |
 
 ## 저장소 구조
 

@@ -1,38 +1,38 @@
-# Canonical Fact Schema
+# Canonical Fact 표준 구조
 
-## 1. Purpose
+## 1. 목적
 
-This document defines the canonical fact schema used between the Detector / Adapter layer and the NEO Reasoning Core.
+이 문서는 감지기(Detector) / 어댑터(Adapter) 계층과 NEO 추론 코어 사이에서 사용하는 Canonical Fact 표준 구조를 정의한다.
 
-The schema standardizes raw observations before they are converted into NEO-readable facts. It also preserves the information required for CF, ATMS, priority arbitration, match trace, Neo4j provenance, NEMI evidence retrieval, and LLM explanation.
+이 구조는 원시 관측값을 NEO가 읽을 수 있는 Fact로 변환하기 전에 표준화한다. 또한 CF, ATMS, 우선순위 조정, 규칙 매칭 이력, Neo4j 출처 계보, NEMI 근거 검색과 설명 모델에 필요한 정보를 보존한다.
 
-## 2. Scope
+## 2. 범위
 
-This document covers:
+이 문서가 다루는 범위는 다음과 같다.
 
-- observation output from Detector / Adapter modules
-- canonical fact fields
-- NEO-readable fact projection
-- confidence and quality fields
-- source and provenance fields
-- ATMS assumption mapping
-- Neo4j and NEMI linkage keys
+- 감지기 / 어댑터 모듈의 관측 출력
+- Canonical Fact 필드
+- NEO가 읽을 수 있는 Fact로의 변환
+- 신뢰도와 품질 필드
+- 소스와 출처 필드
+- ATMS 가정 매핑
+- Neo4j와 NEMI 연결 키
 
-This document does not define:
+다음 항목은 이 문서에서 정의하지 않는다.
 
-- final decision schema
-- final priority schema
-- recommended action schema
-- LLM response schema
-- Vue screen layout
+- 최종 판단 구조
+- 최종 우선순위 구조
+- 권고 조치 구조
+- 설명 모델 응답 구조
+- Vue 화면 배치
 
-Those are handled by the Decision Package and UI/API design documents.
+이 항목은 Decision Package와 UI/API 설계 문서에서 정의한다.
 
-## 3. Core Principle
+## 3. 핵심 원칙
 
-Detector / Adapter modules must produce observations only.
+감지기와 어댑터 모듈은 관측값만 생성해야 한다.
 
-They must not produce:
+다음 값은 생성하면 안 된다.
 
 ```text
 final decision
@@ -42,11 +42,11 @@ recommended action
 NEO decision
 ```
 
-Only NEO may create final decision authority values.
+최종 판단 권한에 해당하는 값은 NEO만 생성할 수 있다.
 
-## 4. Canonical Fact Shape
+## 4. Canonical Fact 구조
 
-Each canonical fact is represented as a structured object before being projected into NEO facts.
+각 Canonical Fact는 NEO Fact로 변환되기 전에 구조화된 객체로 표현한다.
 
 ```json
 {
@@ -97,35 +97,33 @@ Each canonical fact is represented as a structured object before being projected
 }
 ```
 
-## 5. Required Fields
+## 5. 필수 필드
 
-| Field | Required | Purpose |
+| 필드 | 필수 | 목적 |
 |---|---:|---|
-| `fact_id` | Yes | Stable fact identifier |
-| `event_id` | Yes | Groups facts belonging to the same event |
-| `source.source_id` | Yes | Source identity |
-| `source.source_type` | Yes | Source class such as camera, sensor, api, operator |
-| `source.source_reliability` | Yes | CF input |
-| `timestamp` | Yes | Time of observation |
-| `domain` | Yes | Domain such as its, maas, maintenance |
-| `asset.asset_id` | Yes | Asset or service identity |
-| `observation.observation_type` | Yes | Normalized observation type |
-| `observation.symptom` | Yes | Rule-facing symptom key |
-| `observation.value` | Yes | Observed value |
-| `observation.confidence` | Yes | Detector or adapter confidence |
-| `freshness.status` | Yes | fresh, stale, unknown |
-| `quality.quality_flags` | Yes | Quality warnings and guard inputs |
-| `provenance.raw_ref` | Yes | Link to original source data |
-| `provenance.adapter_id` | Yes | Adapter that produced the fact |
-| `neo.assumption_id` | Yes | ATMS assumption key |
+| `fact_id` | 예 | 안정적인 Fact 식별자 |
+| `event_id` | 예 | 같은 사건에 속한 Fact를 묶는 식별자 |
+| `source.source_id` | 예 | 입력 소스 식별자 |
+| `source.source_type` | 예 | 카메라, 센서, API, 운영자 등의 소스 유형 |
+| `source.source_reliability` | 예 | CF 입력값 |
+| `timestamp` | 예 | 관측 시각 |
+| `domain` | 예 | ITS, MaaS, 유지보수 등의 업무 영역 |
+| `asset.asset_id` | 예 | 자산 또는 서비스 식별자 |
+| `observation.observation_type` | 예 | 정규화된 관측 유형 |
+| `observation.symptom` | 예 | 규칙에서 사용하는 증상 키 |
+| `observation.value` | 예 | 관측값 |
+| `observation.confidence` | 예 | 감지기 또는 어댑터 신뢰도 |
+| `freshness.status` | 예 | `fresh`, `stale`, `unknown` |
+| `quality.quality_flags` | 예 | 품질 경고와 조건 검사 입력 |
+| `provenance.raw_ref` | 예 | 원본 소스 자료 연결값 |
+| `provenance.adapter_id` | 예 | Fact를 생성한 어댑터 |
+| `neo.assumption_id` | 예 | ATMS 가정 키 |
 
-`provenance.raw_ref` and `provenance.checksum` are preserved as adapter/source
-metadata for Decision Package and Neo4j lineage. They are not projected as NEO
-reasoning facts, and the current NEO engine does not verify checksum integrity.
+`provenance.raw_ref`와 `provenance.checksum`은 Decision Package와 Neo4j 계보에서 사용할 어댑터·소스 메타데이터로 보존한다. 이 값은 NEO 추론 Fact로 변환하지 않으며, 현재 NEO 엔진은 체크섬 무결성을 직접 검증하지 않는다.
 
-## 6. Enumerations
+## 6. 열거형
 
-### 6.1 Domain
+### 6.1 업무 영역
 
 ```text
 its
@@ -137,7 +135,7 @@ network
 operator
 ```
 
-### 6.2 Source Type
+### 6.2 소스 유형
 
 ```text
 camera
@@ -151,7 +149,7 @@ operator
 system
 ```
 
-### 6.3 Freshness Status
+### 6.3 최신성 상태
 
 ```text
 fresh
@@ -159,7 +157,7 @@ stale
 unknown
 ```
 
-### 6.4 Quality Flags
+### 6.4 품질 플래그
 
 ```text
 low_confidence
@@ -172,7 +170,7 @@ model_uncertain
 sensor_conflict
 ```
 
-### 6.5 Fact Group
+### 6.5 Fact 그룹
 
 ```text
 incident_observation
@@ -183,11 +181,11 @@ operator_report
 guard_condition
 ```
 
-## 7. Confidence Policy
+## 7. 신뢰도 정책
 
-Canonical facts must preserve the confidence components needed by NEO CF propagation.
+Canonical Fact는 NEO의 CF 전파에 필요한 신뢰도 구성값을 보존해야 한다.
 
-Recommended fields:
+권장 필드는 다음과 같다.
 
 ```text
 observation.confidence
@@ -197,9 +195,9 @@ quality.quality_flags
 neo.cf_hint
 ```
 
-`neo.cf_hint` may be computed before NEO as a normalized input hint, but it must not be treated as final decision confidence.
+`neo.cf_hint`는 NEO 실행 전에 정규화된 입력 참고값으로 계산할 수 있지만, 최종 판단 신뢰도로 취급하면 안 된다.
 
-Example:
+예시:
 
 ```text
 detector confidence = 0.84
@@ -208,19 +206,19 @@ freshness factor = 1.00
 cf_hint = 0.756
 ```
 
-NEO may use this hint in rule-side CF propagation. Final decision confidence belongs in the Decision Package.
+NEO는 규칙의 CF 전파 과정에서 이 참고값을 사용할 수 있다. 최종 판단 신뢰도는 Decision Package에 기록한다.
 
-## 8. ATMS Assumption Mapping
+## 8. ATMS 가정 매핑
 
-Each source-backed canonical fact must map to an ATMS assumption.
+소스 근거가 있는 각 Canonical Fact는 ATMS 가정과 연결해야 한다.
 
-Assumption id format:
+가정 식별자 형식:
 
 ```text
 asm_{event_id}_{source_id}_{observation_type}
 ```
 
-Example:
+예시:
 
 ```text
 asm_evt_0001_cctv_17_lane_blocked
@@ -228,11 +226,11 @@ asm_evt_0001_public_its_lane_blocked
 asm_evt_0001_operator_report_lane_blocked
 ```
 
-This allows NEO ATMS to explain which assumptions support a derived decision.
+이를 통해 NEO ATMS는 어떤 가정이 파생 판단을 지지하는지 설명할 수 있다.
 
-Quality or conflict conditions may become nogood candidates.
+품질 문제나 충돌 조건은 nogood 후보가 될 수 있다.
 
-Examples:
+예시:
 
 ```text
 stale_data(cctv_17)
@@ -240,9 +238,9 @@ conflicting_source(cctv_17, public_its)
 low_confidence(yolo_lane_blocked)
 ```
 
-For time-series predictive maintenance, a corroboration conflict may invalidate one support set without removing independent support.
+시계열 예지보전에서는 교차 확인 충돌이 독립 근거를 제거하지 않으면서 특정 Support Set만 무효화할 수 있다.
 
-Example:
+예시:
 
 ```text
 support_pm_timeseries_primary -> invalid
@@ -252,11 +250,11 @@ conflict_type -> cross_sensor_disagreement
 effect -> requires_validation
 ```
 
-The invalidation result belongs to the NEO Decision Package. The Detector and Adapter only set the source-backed conflict observation.
+무효화 결과는 NEO Decision Package에 기록한다. 감지기와 어댑터는 소스 근거가 있는 충돌 관측값만 설정한다.
 
-### 8.1 Time-Series Observation Set
+### 8.1 시계열 관측값 집합
 
-A time-series Detector may emit the following observational facts:
+시계열 감지기는 다음 관측 Fact를 출력할 수 있다.
 
 ```text
 intent = predictive_maintenance
@@ -269,13 +267,13 @@ predicted_issue = no_issue_detected | sensor_degradation
 sensor_corroboration = confirmed | conflicting
 ```
 
-These fields describe model output. They must not contain the final NEO risk class, priority, decision, or action.
+이 필드는 모델 출력을 설명한다. 최종 NEO 위험 등급, 우선순위, 판단 또는 조치를 포함하면 안 된다.
 
-## 9. NEO Fact Projection
+## 9. NEO Fact 변환
 
-Canonical facts should be projected into simple NEO-readable facts.
+Canonical Fact는 NEO가 읽을 수 있는 단순한 Fact로 변환해야 한다.
 
-Example canonical observation:
+Canonical 관측값 예시:
 
 ```json
 {
@@ -300,7 +298,7 @@ Example canonical observation:
 }
 ```
 
-Projected NEO facts:
+변환된 NEO Fact:
 
 ```lisp
 (evt_0001 domain its)
@@ -315,9 +313,9 @@ Projected NEO facts:
 (evt_0001 assumption asm_evt_0001_cctv_17_lane_blocked)
 ```
 
-When a rule needs a direct predicate, the wrapper may project `observation.observation_type` and `observation.value` into a rule-facing NEO fact.
+규칙에 직접 사용할 술어가 필요하면 래퍼는 `observation.observation_type`과 `observation.value`를 규칙용 NEO Fact로 변환할 수 있다.
 
-Example:
+예시:
 
 ```text
 observation.observation_type = road_status
@@ -325,13 +323,13 @@ observation.value = lane_blocked
 projected fact = (evt_0001 road_status lane_blocked)
 ```
 
-This projection remains observational only. It must not create or pass through final decision authority predicates.
+이 변환 결과는 관측 정보로만 유지해야 한다. 최종 판단 권한 술어를 생성하거나 그대로 전달하면 안 된다.
 
-## 10. Neo4j Linkage
+## 10. Neo4j 연결
 
-Canonical facts must provide stable identifiers for graph persistence.
+Canonical Fact는 그래프 저장에 사용할 안정적인 식별자를 제공해야 한다.
 
-Recommended mapping:
+권장 매핑:
 
 ```text
 event_id -> Event node
@@ -342,13 +340,13 @@ neo.assumption_id -> Assumption node
 provenance.raw_ref -> SourceData node or property
 ```
 
-The graph layer must store and expose provenance paths. It must not create decisions.
+그래프 계층은 출처 계보 경로를 저장하고 제공하되 판단을 생성하면 안 된다.
 
-## 11. NEMI Linkage
+## 11. NEMI 연결
 
-Canonical facts should preserve document retrieval keys.
+Canonical Fact는 문서 검색 키를 보존해야 한다.
 
-Recommended keys:
+권장 키:
 
 ```text
 domain
@@ -360,11 +358,11 @@ source.source_type
 quality.quality_flags
 ```
 
-NEMI may use these fields with the later NEO Decision Package fields to retrieve relevant runbooks, policies, and past cases.
+NEMI는 이 필드와 이후 생성되는 NEO Decision Package 필드를 함께 사용해 관련 실행 절차, 정책과 과거 사례를 검색할 수 있다.
 
-## 12. Adapter Output Contract
+## 12. 어댑터 출력 계약
 
-Each adapter must return an array of canonical facts.
+각 어댑터는 Canonical Fact 배열을 반환해야 한다.
 
 ```json
 {
@@ -375,7 +373,7 @@ Each adapter must return an array of canonical facts.
 }
 ```
 
-Adapter output must be rejected or marked invalid if it contains final decision fields such as:
+어댑터 출력에 다음과 같은 최종 판단 필드가 포함되면 요청을 거부하거나 유효하지 않은 값으로 표시해야 한다.
 
 ```text
 neo_decision
@@ -384,7 +382,7 @@ unified_priority
 recommended_actions
 ```
 
-## 13. Minimal Valid Fact
+## 13. 최소 유효 Fact
 
 ```json
 {
@@ -434,25 +432,25 @@ recommended_actions
 }
 ```
 
-## 14. Acceptance Criteria
+## 14. 수용 기준
 
-The schema is accepted when:
+다음 조건을 모두 충족하면 이 표준 구조를 사용할 수 있다.
 
-- every adapter output can be represented as canonical facts
-- no adapter output contains final decision authority fields
-- each fact has source, time, confidence, freshness, quality, and provenance fields
-- each source-backed fact has an ATMS assumption id
-- each confidence-bearing fact can produce or carry a CF hint
-- each fact can be projected into NEO-readable facts
-- each fact can be linked to Neo4j provenance nodes
-- each fact carries enough keys for NEMI retrieval
+- 모든 어댑터 출력을 Canonical Fact로 표현할 수 있다.
+- 어댑터 출력에 최종 판단 권한 필드가 없다.
+- 각 Fact에 소스, 시각, 신뢰도, 최신성, 품질과 출처 필드가 있다.
+- 소스 근거가 있는 각 Fact에 ATMS 가정 식별자가 있다.
+- 신뢰도 값이 있는 각 Fact가 CF 참고값을 생성하거나 전달할 수 있다.
+- 각 Fact를 NEO가 읽을 수 있는 Fact로 변환할 수 있다.
+- 각 Fact를 Neo4j 출처 노드와 연결할 수 있다.
+- 각 Fact가 NEMI 검색에 충분한 키를 포함한다.
 
-## 15. Next Step
+## 15. 다음 단계
 
-After this schema is fixed, the next design document is:
+이 표준 구조를 확정한 뒤 사용할 다음 설계 문서는 다음과 같다.
 
 ```text
 docs/design/DECISION_PACKAGE_SCHEMA.md
 ```
 
-The Decision Package defines the standard output produced after NEO reasoning.
+Decision Package는 NEO 추론 이후 생성되는 표준 출력을 정의한다.

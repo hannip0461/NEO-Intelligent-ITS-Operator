@@ -1,16 +1,16 @@
-# Decision Package Schema
+# Decision Package 표준 구조
 
-## 1. Purpose
+## 1. 목적
 
-This document defines the standard Decision Package produced after NEO reasoning.
+이 문서는 NEO 추론 이후 생성되는 Decision Package의 표준 구조를 정의한다.
 
-The Decision Package is the single structured output shared by FastAPI, Vue, Neo4j, NEMI, and LLM explanation layers.
+Decision Package는 FastAPI, Vue, Neo4j, NEMI와 설명 모델 계층이 함께 사용하는 단일 구조화 출력이다.
 
-## 2. Core Principle
+## 2. 핵심 원칙
 
-NEO is the only decision authority.
+판단 권한은 NEO에만 있다.
 
-The Decision Package may be stored, visualized, explained, and searched by downstream layers, but downstream layers must not create or override:
+하위 계층은 Decision Package를 저장, 시각화, 설명하고 검색할 수 있다. 다만 다음 값을 생성하거나 덮어쓰면 안 된다.
 
 ```text
 neo_decision
@@ -21,18 +21,18 @@ recommended_actions
 decision_confidence
 ```
 
-## 3. Producer and Consumers
+## 3. 생성자와 사용 계층
 
-| Role | Component | Responsibility |
+| 역할 | 구성요소 | 책임 |
 |---|---|---|
-| Producer | NEO Reasoning Core / wrapper | Produce and normalize the Decision Package |
-| Orchestrator | FastAPI | Serve the Decision Package and enrich it with support data |
-| UI consumer | Vue | Display decision, trace, graph, evidence, and chatbot answer |
-| Graph consumer | Neo4j | Store and expose provenance paths |
-| Evidence consumer | NEMI | Retrieve document history and evidence |
-| Explanation consumer | LLM | Explain the package without changing it |
+| 생성자 | NEO 추론 코어 / 래퍼 | Decision Package 생성과 정규화 |
+| 오케스트레이터 | FastAPI | Decision Package 제공과 보조 데이터 연결 |
+| UI 사용 계층 | Vue | 판단, 이력, 그래프, 근거와 설명 답변 표시 |
+| 그래프 사용 계층 | Neo4j | 출처 계보 경로 저장과 조회 제공 |
+| 근거 사용 계층 | NEMI | 문서 이력과 근거 검색 |
+| 설명 사용 계층 | 설명 모델 | 패키지를 변경하지 않고 설명 |
 
-## 4. Top-Level Shape
+## 4. 최상위 구조
 
 ```json
 {
@@ -55,32 +55,30 @@ decision_confidence
 }
 ```
 
-## 5. Required Top-Level Fields
+## 5. 필수 최상위 필드
 
-| Field | Required | Purpose |
+| 필드 | 필수 | 목적 |
 |---|---:|---|
-| `package_id` | Yes | Stable package identifier |
-| `schema_version` | Yes | Decision Package schema version |
-| `created_at` | Yes | Package creation time |
-| `event_id` | Yes | Event being judged |
-| `decision_authority` | Yes | Must be `NEO` |
-| `knowledge_base` | Yes | KB artifact version and hash used for this decision |
-| `decision` | Yes | Final NEO decision fields |
-| `confidence` | Yes | CF-derived confidence fields |
-| `reasoning` | Yes | Rule and trace metadata |
-| `assumptions` | Yes | ATMS support metadata |
-| `conflicts` | Yes | Conflict and nogood metadata |
-| `actions` | Yes | NEO-recommended actions |
-| `source_facts` | Yes | Facts used by NEO |
-| `provenance` | Yes | Source and graph linkage |
-| `downstream_context` | Yes | Keys for Neo4j, NEMI, LLM, Vue |
-| `warnings` | Yes | Operator-facing warnings |
+| `package_id` | 예 | 안정적인 패키지 식별자 |
+| `schema_version` | 예 | Decision Package 구조 버전 |
+| `created_at` | 예 | 패키지 생성 시각 |
+| `event_id` | 예 | 판단 대상 사건 |
+| `decision_authority` | 예 | 반드시 `NEO` |
+| `knowledge_base` | 예 | 판단에 사용한 KB 산출물 버전과 해시 |
+| `decision` | 예 | 최종 NEO 판단 필드 |
+| `confidence` | 예 | CF에서 계산한 신뢰도 필드 |
+| `reasoning` | 예 | 규칙과 추론 이력 메타데이터 |
+| `assumptions` | 예 | ATMS 지지 근거 메타데이터 |
+| `conflicts` | 예 | 충돌과 nogood 메타데이터 |
+| `actions` | 예 | NEO 권고 조치 |
+| `source_facts` | 예 | NEO가 사용한 Fact |
+| `provenance` | 예 | 소스와 그래프 연결 정보 |
+| `downstream_context` | 예 | Neo4j, NEMI, 설명 모델과 Vue 연결 키 |
+| `warnings` | 예 | 운영자에게 표시할 경고 |
 
-### 5.1 Knowledge Base Pinning
+### 5.1 Knowledge Base 고정
 
-The `knowledge_base` object identifies the exact NEO KB artifact and rule-set
-version used to create the package. It supports repeatable review: the same
-input can be compared against the same KB version and hash.
+`knowledge_base` 객체는 패키지를 생성할 때 사용한 정확한 NEO KB 산출물과 규칙 집합 버전을 식별한다. 같은 입력을 같은 KB 버전과 해시 기준으로 비교할 수 있어 반복 검토가 가능하다.
 
 ```json
 {
@@ -94,9 +92,9 @@ input can be compared against the same KB version and hash.
 }
 ```
 
-## 6. Decision Object
+## 6. Decision 객체
 
-The `decision` object contains NEO authority fields.
+`decision` 객체에는 NEO 판단 권한 필드를 기록한다.
 
 ```json
 {
@@ -112,9 +110,9 @@ The `decision` object contains NEO authority fields.
 }
 ```
 
-### 6.1 Decision Mode
+### 6.1 판단 모드
 
-Allowed values:
+허용값:
 
 ```text
 incident_response
@@ -124,9 +122,9 @@ monitor_only
 insufficient_evidence
 ```
 
-### 6.2 Priority
+### 6.2 우선순위
 
-Allowed priority values:
+허용 우선순위:
 
 ```text
 p1
@@ -136,11 +134,11 @@ none
 unknown
 ```
 
-Priority must come from NEO rule output.
+우선순위는 NEO 규칙 출력에서만 가져와야 한다.
 
-## 7. Confidence Object
+## 7. Confidence 객체
 
-The `confidence` object carries CF-derived confidence information.
+`confidence` 객체에는 CF에서 계산한 신뢰도 정보를 기록한다.
 
 ```json
 {
@@ -166,18 +164,18 @@ The `confidence` object carries CF-derived confidence information.
 }
 ```
 
-Rules:
+규칙:
 
-- `decision_confidence` must be between 0.0 and 1.0.
-- LLM must not assign this value.
-- NEMI and Neo4j may display this value but must not modify it.
-- `cf_role = evidence` inputs participate in decision confidence scoring.
-- `cf_role = context` inputs, such as request intent, are displayed for traceability but excluded from decision confidence scoring.
-- `cf_role = model_quality` inputs, such as detector model quality, are displayed separately and excluded from decision confidence scoring.
+- `decision_confidence`는 0.0 이상 1.0 이하여야 한다.
+- 설명 모델은 이 값을 지정하면 안 된다.
+- NEMI와 Neo4j는 이 값을 표시할 수 있지만 변경하면 안 된다.
+- `cf_role = evidence` 입력은 판단 신뢰도 계산에 참여한다.
+- 요청 의도와 같은 `cf_role = context` 입력은 추적을 위해 표시하지만 판단 신뢰도 계산에서는 제외한다.
+- 감지기 모델 품질과 같은 `cf_role = model_quality` 입력은 별도로 표시하고 판단 신뢰도 계산에서는 제외한다.
 
-## 8. Reasoning Object
+## 8. Reasoning 객체
 
-The `reasoning` object records rule matching and inference trace.
+`reasoning` 객체에는 규칙 매칭과 추론 이력을 기록한다.
 
 ```json
 {
@@ -220,15 +218,15 @@ The `reasoning` object records rule matching and inference trace.
 }
 ```
 
-Rules:
+규칙:
 
-- `matched_rules` must include the rules that contributed to the final decision.
-- `failed_conditions` should include relevant guard or conflict conditions.
-- `match_trace` should be structured enough for UI and review use.
+- `matched_rules`에는 최종 판단에 기여한 규칙을 포함해야 한다.
+- `failed_conditions`에는 관련 조건 검사 또는 충돌 조건을 포함해야 한다.
+- `match_trace`는 UI 표시와 검토에 사용할 수 있는 구조여야 한다.
 
-## 9. Assumptions Object
+## 9. Assumptions 객체
 
-The `assumptions` object records ATMS support metadata.
+`assumptions` 객체에는 ATMS 지지 근거 메타데이터를 기록한다.
 
 ```json
 {
@@ -252,15 +250,15 @@ The `assumptions` object records ATMS support metadata.
 }
 ```
 
-Rules:
+규칙:
 
-- Source-backed facts should appear as assumptions.
-- The package should explain which support set keeps the decision valid.
-- Invalid support sets should be preserved for review.
+- 소스 근거가 있는 Fact는 가정으로 표시해야 한다.
+- 어떤 Support Set이 판단을 유효하게 유지하는지 패키지에서 설명해야 한다.
+- 유효하지 않은 Support Set도 검토를 위해 보존해야 한다.
 
-## 10. Conflicts Array
+## 10. Conflicts 배열
 
-The `conflicts` array records conflict and nogood information.
+`conflicts` 배열에는 충돌과 nogood 정보를 기록한다.
 
 ```json
 [
@@ -280,7 +278,7 @@ The `conflicts` array records conflict and nogood information.
 ]
 ```
 
-Allowed `effect` values:
+허용되는 `effect` 값:
 
 ```text
 blocks_decision
@@ -289,9 +287,9 @@ requires_operator_check
 informational
 ```
 
-## 11. Actions Array
+## 11. Actions 배열
 
-The `actions` array contains NEO-recommended actions.
+`actions` 배열에는 NEO가 권고한 조치를 기록한다.
 
 ```json
 [
@@ -314,15 +312,15 @@ The `actions` array contains NEO-recommended actions.
 ]
 ```
 
-Rules:
+규칙:
 
-- Actions must come from NEO output.
-- LLM may explain actions but must not create new actions.
-- Vue may display and request operator acknowledgement, but acknowledgement workflow is separate from decision authority.
+- 조치는 NEO 출력에서만 가져와야 한다.
+- 설명 모델은 조치를 설명할 수 있지만 새로운 조치를 생성하면 안 된다.
+- Vue는 조치를 표시하고 운영자 확인을 요청할 수 있지만, 확인 절차는 판단 권한과 분리한다.
 
-## 12. Source Facts Array
+## 12. Source Facts 배열
 
-The `source_facts` array links the decision back to canonical facts.
+`source_facts` 배열은 판단을 원본 Canonical Fact와 연결한다.
 
 ```json
 [
@@ -340,11 +338,9 @@ The `source_facts` array links the decision back to canonical facts.
 ]
 ```
 
-## 13. Provenance Object
+## 13. Provenance 객체
 
-The `provenance` object provides graph and source linkage.
-Raw references and checksums are preserved for traceability. They do not imply
-that NEO verified raw-data integrity during rule reasoning.
+`provenance` 객체는 그래프와 소스 연결 정보를 제공한다. 원본 참조값과 체크섬은 추적을 위해 보존하지만, NEO가 규칙 추론 중 원본 데이터의 무결성을 검증했다는 의미는 아니다.
 
 ```json
 {
@@ -372,9 +368,9 @@ that NEO verified raw-data integrity during rule reasoning.
 }
 ```
 
-## 14. Downstream Context Object
+## 14. Downstream Context 객체
 
-The `downstream_context` object contains controlled context for FastAPI, Vue, Neo4j, NEMI, and LLM.
+`downstream_context` 객체에는 FastAPI, Vue, Neo4j, NEMI와 설명 모델에 제공할 통제된 문맥을 기록한다.
 
 ```json
 {
@@ -413,9 +409,9 @@ The `downstream_context` object contains controlled context for FastAPI, Vue, Ne
 }
 ```
 
-## 15. Warnings Array
+## 15. Warnings 배열
 
-Warnings are operator-facing but non-authoritative.
+경고는 운영자에게 표시하지만 판단 권한을 갖지 않는다.
 
 ```json
 [
@@ -431,7 +427,7 @@ Warnings are operator-facing but non-authoritative.
 ]
 ```
 
-## 16. Complete Example
+## 16. 전체 예시
 
 ```json
 {
@@ -599,32 +595,32 @@ Warnings are operator-facing but non-authoritative.
 }
 ```
 
-## 17. LLM Contract
+## 17. 설명 모델 계약
 
-The LLM may:
-
-```text
-summarize the decision
-explain matched rules
-explain confidence and warning conditions
-summarize Neo4j graph paths
-summarize NEMI documents
-answer user questions using the package and retrieved evidence
-```
-
-The LLM must not:
+설명 모델은 다음 작업을 수행할 수 있다.
 
 ```text
-change priority
-create new actions
-change neo_decision
-invent unsupported evidence
-hide conflicts or warnings
+판단 요약
+매칭된 규칙 설명
+신뢰도와 경고 조건 설명
+Neo4j 그래프 경로 요약
+NEMI 문서 요약
+패키지와 검색 근거를 사용한 운영자 질문 답변
 ```
 
-## 18. Neo4j Contract
+설명 모델은 다음 작업을 수행하면 안 된다.
 
-Neo4j may store and expose:
+```text
+우선순위 변경
+새 조치 생성
+neo_decision 변경
+근거 없는 내용 생성
+충돌 또는 경고 숨김
+```
+
+## 18. Neo4j 계약
+
+Neo4j는 다음 노드를 저장하고 조회할 수 있다.
 
 ```text
 Event
@@ -638,43 +634,43 @@ ConflictSet
 Document
 ```
 
-Neo4j must not compute final decision authority.
+Neo4j는 최종 판단 권한 값을 계산하면 안 된다.
 
-## 19. NEMI Contract
+## 19. NEMI 계약
 
-NEMI may retrieve:
-
-```text
-runbooks
-policies
-past cases
-maintenance notes
-operator guidance documents
-```
-
-NEMI must not compute final decision authority.
-
-## 20. Acceptance Criteria
-
-The Decision Package schema is accepted when:
-
-- it contains NEO decision authority fields
-- it contains CF-derived decision confidence
-- it contains ATMS support assumptions and support sets
-- it contains conflict or nogood metadata when applicable
-- it contains matched rules and match trace
-- it links back to source facts
-- it provides Neo4j graph linkage keys
-- it provides NEMI retrieval keys
-- it provides controlled LLM context
-- no downstream layer is allowed to override NEO decisions
-
-## 21. Next Step
-
-After this schema is fixed, the next design step is:
+NEMI는 다음 자료를 검색할 수 있다.
 
 ```text
-NEO KB / wrapper / output mapping design
+실행 절차
+정책
+과거 사례
+유지보수 기록
+운영자 안내 문서
 ```
 
-This next step uses the existing NEO engine and focuses on KB facts, rules, wrapper mapping, and Decision Package conversion.
+NEMI는 최종 판단 권한 값을 계산하면 안 된다.
+
+## 20. 수용 기준
+
+다음 조건을 모두 충족하면 Decision Package 표준 구조를 사용할 수 있다.
+
+- NEO 판단 권한 필드를 포함한다.
+- CF에서 계산한 판단 신뢰도를 포함한다.
+- ATMS 지지 가정과 Support Set을 포함한다.
+- 필요한 경우 충돌 또는 nogood 메타데이터를 포함한다.
+- 매칭된 규칙과 규칙 매칭 이력을 포함한다.
+- 원본 Fact와 연결된다.
+- Neo4j 그래프 연결 키를 제공한다.
+- NEMI 검색 키를 제공한다.
+- 통제된 설명 모델 문맥을 제공한다.
+- 어떤 하위 계층도 NEO 판단을 덮어쓸 수 없다.
+
+## 21. 다음 단계
+
+이 표준 구조를 확정한 뒤 진행할 다음 설계 단계는 다음과 같다.
+
+```text
+NEO KB / 래퍼 / 출력 매핑 설계
+```
+
+다음 단계에서는 기존 NEO 엔진을 사용하며 KB Fact, 규칙, 래퍼 매핑과 Decision Package 변환에 집중한다.
