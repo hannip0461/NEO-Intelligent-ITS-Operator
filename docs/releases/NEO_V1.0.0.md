@@ -1,50 +1,33 @@
-# NEO v1.0.0 릴리즈 기록
+## 주요 변경
 
-- 배포일: 2026-08-02
-- 상태: GitHub, Docker Hub, AWS 배포 및 검증 완료
-- 서비스 주소: `https://3-38-33-156.sslip.io/neo`
-
-## 릴리즈 범위
-
-- NEO Rule Engine, ATMS, CF 기반 판단
-- FastAPI 오케스트레이션
-- Neo4j Graph RAG 계보 저장 및 조회
-- NEMI Vector RAG 근거 검색
-- Amazon Bedrock Nova 2 Lite 판단 설명
-- Vue 관제 화면 6개
-
-공개 저장소는 운영 화면과 설계·배포 문서를 제공하며, 핵심 규칙 엔진과 Rule KB는 별도로 관리한다.
-
-## Docker Hub 이미지
-
-| 구성요소 | 이미지 |
-| --- | --- |
-| Vue 관제 화면 | `kimmj6466/neo-operator-frontend:v1.0.0` |
-| NEO FastAPI | `kimmj6466/neo-operator-api:v1.0.0` |
-| NEMI API | `kimmj6466/neo-nemi-api:v1.0.0` |
-
-AWS EC2는 위 v1.0.0 이미지를 배포 설정에 고정해 사용한다.
+- 교통 입력을 Canonical Fact로 정규화하고 NEO Rule Engine, ATMS, CF를 적용해 판단과 대응 가이드를 생성했습니다.
+- Neo4j에 Fact, Rule, Decision 관계를 저장하고 NEMI Vector RAG로 SOP, 정책, 사고 이력 근거를 검색하도록 연결했습니다.
+- 관제자가 사건 선택, 판단 재실행, 근거 검토, 조치 준비와 감사 이력을 하나의 흐름에서 확인하도록 Vue 화면 6개를 구성했습니다.
+- LSTM 잔차, 통계 기준선, AI4I 참조 규칙과 C-MAPSS 참조 RUL을 NEO 판단 흐름에 연결했습니다.
+- Amazon Bedrock Nova 2 Lite가 현재 판단과 연결 근거를 한국어로 설명하도록 구성했습니다.
+- Docker Compose 기반 실행 환경을 AWS EC2에 배포하고 Nginx, HTTPS와 내부 API 프록시를 적용했습니다.
 
 ## 검증 결과
 
-| 항목 | 결과 |
-| --- | --- |
-| Python 단위 테스트 | 218개 통과 |
-| NEO Vue 프로덕션 빌드 | 통과 |
-| 엔진 E2E 스모크 | 통과 |
-| FastAPI 스모크 | 통과 |
-| Vue 클라이언트 스모크 | 통과 |
-| 공개 화면 6개 | 모두 HTTP 200 |
-| 공개 실시간 파이프라인 | 완료 |
-| NEO 판단 | `requires_operator_ack`, CF `0.85` |
-| Neo4j 동기화 | 20노드, 28관계 |
-| NEMI 검색 | 문서 2건 |
-| Bedrock 설명 | Nova 2 Lite 응답 성공, 1,305ms |
-| 배포 직후 오류 로그 | 0건 |
+- Python 단위 테스트 218개를 통과했습니다.
+- NEO Vue 프로덕션 빌드와 엔진 E2E, FastAPI, Vue 클라이언트 스모크 검증을 통과했습니다.
+- 관제, 예지 및 이상 분석, 계보, 이력, 상태, 정책 화면의 HTTP 200 응답을 확인했습니다.
+- 공개 파이프라인에서 NEO 판단 `requires_operator_ack`, CF `0.85`, Neo4j 20노드와 28관계, NEMI 문서 2건을 확인했습니다.
+- Amazon Bedrock Nova 2 Lite의 한국어 설명 응답을 1,305ms에 확인했습니다.
+- 배포 직후 프론트엔드, FastAPI, NEMI 컨테이너의 오류 로그가 0건임을 확인했습니다.
 
-## 배포 안전성
+## 적용 환경
 
-- API 키는 프론트 Nginx의 내부 프록시 계층에서 주입한다.
-- FastAPI, Neo4j, NEMI, Qdrant 포트는 EC2 루프백에만 바인딩한다.
-- 설명 모델의 역할은 NEO 판단의 읽기 전용 설명으로 제한한다.
-- 외부 조치는 운영자 승인 후 송출한다.
+- AWS EC2 Ubuntu에서 Vue, FastAPI, NEMI, Neo4j와 Qdrant를 Docker Compose로 실행합니다.
+- 호스트 Nginx가 HTTPS 요청을 내부 프론트엔드로 전달하고 API 키는 내부 프록시 계층에서 주입합니다.
+- FastAPI, Neo4j, NEMI와 Qdrant 포트는 EC2 루프백에 바인딩합니다.
+- 설명 모델은 NEO 판단의 읽기 전용 설명을 담당하고 외부 조치는 운영자 승인 후 송출합니다.
+- Vue 관제 화면은 `kimmj6466/neo-operator-frontend:v1.0.0`을 사용합니다.
+- NEO FastAPI는 `kimmj6466/neo-operator-api:v1.0.0`을 사용합니다.
+- NEMI API는 `kimmj6466/neo-nemi-api:v1.0.0`을 사용합니다.
+- 운영 데모는 [AWS NEO 관제 화면](https://3-38-33-156.sslip.io/neo)에서 확인할 수 있습니다.
+
+## 변경 기록
+
+- [v1.0.0 공개 릴리즈 커밋](https://github.com/hannip0461/NEO-Intelligent-ITS-Operator/commit/a20c6a47d54117d93c432d62133529dae65fb42c)
+- [AWS EC2 배포 기록](https://github.com/hannip0461/NEO-Intelligent-ITS-Operator/blob/main/docs/deployment/AWS_EC2_DEPLOYMENT.md)
