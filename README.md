@@ -174,9 +174,9 @@ docker compose -f docker-compose.neo.yml down
 | --- | --- |
 | [AWS EC2 배포 기록](docs/deployment/AWS_EC2_DEPLOYMENT.md) | 인스턴스 생성부터 Docker Compose, HTTPS 적용까지의 화면 기록 |
 | [AWS EC2 배포 기록 PDF](docs/deployment/NEO_AWS_DEPLOYMENT_RECORD.pdf) | 제출·열람용 배포 과정 PDF |
-| [Canonical Fact Schema](docs/design/CANONICAL_FACT_SCHEMA.md) | 외부 입력 정규화 계약 |
-| [Decision Package Schema](docs/design/DECISION_PACKAGE_SCHEMA.md) | 판단·근거·버전 추적 계약 |
-| [Workspace Guide](docs/WORKSPACE_GUIDE.md) | 개발 기준 문서, 런타임 입력과 내부 작업 순서 |
+| [Canonical Fact 스키마](docs/design/CANONICAL_FACT_SCHEMA.md) | 외부 입력 정규화 계약 |
+| [Decision Package 스키마](docs/design/DECISION_PACKAGE_SCHEMA.md) | 판단·근거·버전 추적 계약 |
+| [Workspace 개발 가이드](docs/WORKSPACE_GUIDE.md) | 개발 기준 문서, 런타임 입력과 내부 작업 순서 |
 
 ## 저장소 구조
 
