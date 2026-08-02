@@ -83,21 +83,27 @@ FastAPI는 입력을 Canonical Fact로 정규화해 NEO Rule KB에 전달합니�
 ## 시스템 구성
 
 ```mermaid
-flowchart LR
-    A["ITS · CCTV · VMS · TAAS"] --> B["FastAPI Orchestrator"]
-    B --> C["Canonical Fact"]
-    C --> D["NEO Rule Engine<br/>Rule KB · ATMS · CF"]
-    D --> E["Decision Package"]
-    E --> F["Neo4j Graph RAG<br/>판단 계보"]
-    E --> G["NEMI VectorDB RAG<br/>문서 근거"]
-    E --> J["설명 모델<br/>읽기 전용"]
-    E --> H["Vue 3 Operator UI"]
-    F --> H
-    G --> H
-    F --> J
-    G --> J
-    J --> H
-    H --> I["운영자 검토 · 조치 · 감사"]
+flowchart TB
+    subgraph INPUT["입력과 분석"]
+        A["ITS, CCTV, VMS, TAAS"] --> C["FastAPI 수집 어댑터"]
+        B["설비 및 교통 시계열"] --> D["LSTM 잔차, Z-score<br/>AI4I 및 RUL 참조"]
+    end
+    C --> E["Canonical Fact"]
+    D --> E
+    E --> F["NEO Rule Engine<br/>Rule KB, ATMS, CF"]
+    F --> G["Decision Package"]
+    G --> H["FastAPI 통합 및 운영 API"]
+    subgraph EVIDENCE["근거 및 설명 서비스"]
+        I["Neo4j Graph DB<br/>계보 저장 및 Graph RAG 경로"]
+        J["NEMI RAG API<br/>문서 근거 검색"] <--> K["Qdrant VectorDB"]
+        L["설명 모델, 선택<br/>Ollama Gemma4 또는 AWS Bedrock"]
+    end
+    H <-->|계보 저장 및 조회| I
+    H <-->|문서 근거 검색| J
+    H <-->|요청 시 읽기 전용 설명| L
+    H <--> M["Vue 3 Operator UI"]
+    M --> N["운영자 검토, 조치, 감사"]
+    N --> H
 ```
 
 | 구성요소 | 책임 |
