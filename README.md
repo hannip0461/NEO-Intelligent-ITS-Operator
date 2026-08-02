@@ -21,7 +21,7 @@
 
 교통 관제에서는 속도 저하, 정체 신호, CCTV 시야 제한처럼 서로 다른 입력이 동시에 발생합니다. 하나의 경보만 사용하면 과잉 대응하거나 중요한 충돌 신호를 놓칠 수 있습니다.
 
-FastAPI는 입력을 Canonical Fact로 정규화해 NEO Rule KB에 전달합니다. NEO는 ATMS로 가정과 충돌 근거를 관리하고 CF로 판단 강도를 계산한 뒤, 후속 규칙을 통해 위험도와 대응 가이드를 단계적으로 생성합니다. 최종 결과만 보여주지 않고 Neo4j 관계 계보와 NEMI 문서 근거를 함께 연결해 운영자가 판단 과정을 확인하도록 구성했습니다.
+FastAPI는 입력을 Canonical Fact로 정규화해 NEO Rule KB에 전달합니다. NEO는 ATMS로 가정과 충돌 근거를 관리하고 CF로 판단 강도를 계산한 뒤, 후속 규칙을 통해 위험도와 대응 가이드를 단계적으로 생성합니다. Neo4j에는 판단 관계를 저장하고 NEMI에서는 관련 문서를 검색해, 운영자가 판단과 연결 근거를 함께 확인할 수 있습니다.
 
 | 영역 | 구현 결과 |
 | --- | --- |
@@ -55,7 +55,7 @@ FastAPI는 입력을 Canonical Fact로 정규화해 NEO Rule KB에 전달합니�
 | INC-9904 시야 제한 단독 감지 | CCTV 저시정 + 정상 교통 흐름 | 관찰 후 재확인 |
 | INC-9897 정체 회복 | 속도 회복 추세 | 교통 흐름 모니터링 |
 
-각 사건은 저장 화면만 바꾸는 예시가 아니라, 해당 입력 사실이 NEO Rule KB의 서로 다른 규칙과 매칭되는 실제 판단 흐름으로 재현됩니다.
+사건별 입력 Fact가 서로 다른 Rule과 매칭되며, 그 결과에 따라 판단과 권고 조치가 달라집니다.
 
 ## 시스템 구성
 
@@ -88,7 +88,7 @@ flowchart TB
 | NEO Engine | 규칙 매칭, 충돌 관리, CF 계산과 파생 Fact 생성 |
 | FastAPI | 입력 정규화, NEO 실행과 외부 연동 조율 |
 | Neo4j | Fact·Rule·Decision 관계 저장과 XAI 계보 조회 |
-| NEMI | 프로젝트 내부 명칭의 VectorDB RAG, 운영 문서 근거 검색 |
+| NEMI | 프로젝트에서 명명한 Qdrant 기반 VectorDB RAG, 운영 문서 근거 검색 |
 | Qdrant | NEMI 임베딩과 유사도 검색 저장소 |
 | Vue 3 + TypeScript | 사건 선택, 근거 검토, 조치와 감사 이력 UI |
 | 설명 모델 (선택) | Decision Package와 연결 근거 설명, NEO 판단 변경 권한 없음 |
@@ -164,19 +164,19 @@ docker compose -f docker-compose.neo.yml down
 - FastAPI, NEMI, Neo4j, Qdrant 포트는 loopback에만 바인딩
 - AWS 데모는 현재 EC2 자원에 맞춰 Amazon Nova 2 Lite로 판단을 설명
 - `/neo`, `/neo/predictive`, `/neo/lineage`, `/neo/logs`, `/neo/health`, `/neo/settings` 응답 확인
-- HTTP → HTTPS 전환과 Certbot 인증서 자동 갱신 모의시험 확인
+- HTTP → HTTPS 전환과 Certbot 인증서 자동 갱신 모의시험 통과
 
-로컬과 GPU 서버의 기본 설명 모델은 Gemma4다. 두 환경 모두 설명 모델은 NEO가 확정한 판단을 바꾸지 않는다.
+로컬과 GPU 서버에서는 Gemma4를 기본 설명 모델로 사용합니다. 설명 모델은 NEO가 확정한 판단을 변경하지 않습니다.
 
 ## 산출물
 
 | 문서 | 내용 |
 | --- | --- |
 | [AWS EC2 배포 기록](docs/deployment/AWS_EC2_DEPLOYMENT.md) | 인스턴스 생성부터 Docker Compose, HTTPS 적용까지의 화면 기록 |
-| [AWS EC2 배포 기록 PDF](docs/deployment/NEO_AWS_DEPLOYMENT_RECORD.pdf) | 제출·열람용 배포 과정 PDF |
+| [AWS EC2 배포 기록 PDF](docs/deployment/NEO_AWS_DEPLOYMENT_RECORD.pdf) | 배포 과정을 정리한 PDF |
 | [Canonical Fact 스키마](docs/design/CANONICAL_FACT_SCHEMA.md) | 외부 입력 정규화 계약 |
 | [Decision Package 스키마](docs/design/DECISION_PACKAGE_SCHEMA.md) | 판단·근거·버전 추적 계약 |
-| [Workspace 개발 가이드](docs/WORKSPACE_GUIDE.md) | 개발 기준 문서, 런타임 입력과 내부 작업 순서 |
+| [Workspace 개발 가이드](docs/WORKSPACE_GUIDE.md) | 개발 기준, 런타임 입력과 작업 순서 |
 
 ## 저장소 구조
 

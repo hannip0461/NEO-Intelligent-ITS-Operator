@@ -112,7 +112,7 @@ EC2 내부와 외부 주소에서 HTTP 응답을 확인했다. `/neo` 경로가 
 애플리케이션 갱신 후 Docker 포트 바인딩과 EC2 보안 그룹을 함께 점검했다. 프론트엔드는 호스트 Nginx를 통해 HTTP/HTTPS로 제공하고, FastAPI·NEMI API·Neo4j·Qdrant는 EC2의 loopback 주소(`127.0.0.1`)에만 바인딩했다.
 
 - 보안 그룹 허용: HTTP `80`과 HTTPS `443`은 전체 접속 허용
-- SSH `22`: 관리 PC의 현재 공인 IP `180.68.244.161/32`만 허용
+- SSH `22`: 관리 PC 공인 IP의 `/32` 범위만 허용
 - 제거한 개발 규칙: NEMI API `8010`, Neo4j Browser `7474`, FastAPI `8000`
 - 외부 포트 재검증: `22/80/443` 열림, `6333/7474/7687/8000/8010` 닫힘
 
@@ -141,7 +141,7 @@ Certbot과 Let's Encrypt를 이용해 TLS 인증서를 발급하고 HTTP 요청�
 - Neo4j 스키마는 중복 노드 0개, 필수 제약 9/9개로 확인했다.
 - AWS에서 실시간 판단을 실행해 새 Decision Package와 `20 nodes / 28 relationships` 계보를 저장·재조회했다.
 - `/neo`, `/neo/lineage`, `/neo/logs`, `/neo/health`, `/neo/settings`, 현장 증거 이미지 5종은 모두 HTTPS 200을 반환했다.
-- NEO, Neo4j, NEMI는 정상이며 선택 기능인 Ollama/LLM만 미실행 상태다.
+- 해당 갱신에서는 NEO, Neo4j, NEMI를 정상 상태로 확인했고, 선택 기능인 Ollama/LLM은 실행 대상에서 제외했다.
 - 브라우저 콘솔 오류, FastAPI 오류 로그, 프론트엔드 5xx 응답은 모두 0건이었다.
 
 ## 16. 2026-07-22 최종 UI 승인본 갱신
@@ -169,3 +169,12 @@ Certbot과 Let's Encrypt를 이용해 TLS 인증서를 발급하고 HTTP 요청�
 - 공개 UI의 새 판단 실행, 판단 설명 패널과 Amazon Nova 2 Lite 안내를 확인했다.
 - 설명 API 요청 2건은 모두 HTTP 200이었고 배포 후 API 로그의 Traceback, ERROR, Exception은 0건이었다.
 - 검증 후 전송용 S3 버킷, 임시 SSH 키, EC2 임시 파일과 CloudShell 전용 SSH 허용 규칙을 모두 제거했다.
+
+## 19. 2026-08-03 v2.0.0 배포
+
+- 감시, 이력, 예지 및 이상 분석, 계보, 상태와 정책 화면을 개선한 `v2.0.0` 이미지 3종을 Docker Hub에 게시했다.
+- 배포 전 Python 단위 테스트 219개와 Vue 프로덕션 빌드를 통과했다.
+- 기존 Neo4j, Qdrant와 운영자 조치 데이터 볼륨을 유지하고 프론트엔드, NEO API와 NEMI API 컨테이너만 교체했다.
+- 공개 화면 6개의 HTTPS 200 응답과 PC·모바일 화면의 가로 넘침 및 콘솔 오류 0건을 확인했다.
+- 공개 판단 파이프라인에서 NEO 판단 `requires_operator_ack`, Neo4j 20노드와 28관계, NEMI 문서 2건을 확인했다.
+- 배포 후 15분 로그에서 Traceback, uncaught, fatal, panic 패턴은 0건이었다.
