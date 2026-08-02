@@ -4,7 +4,7 @@
 
 > `NEO`는 이 프로젝트에서 명명한 자체 규칙 추론 엔진입니다. Rule KB, ATMS(Assumption-based Truth Maintenance System), CF(Certainty Factor)를 결합해 판단합니다.
 
-> 핵심 규칙 엔진과 Rule KB는 비공개 자산입니다. 이 저장소에는 운영 화면, 설계 계약, 작업공간 안내와 AWS 배포 기록만 공개합니다.
+> 이 저장소는 운영 화면, 설계 계약, 작업공간 안내와 AWS 배포 기록을 제공합니다. 핵심 규칙 엔진과 Rule KB는 별도로 관리합니다.
 
 - **AWS 데모:** https://3-38-33-156.sslip.io/neo
 
@@ -45,7 +45,7 @@
 
 교통 관제에서는 속도 저하, 정체 신호, CCTV 시야 제한처럼 서로 다른 입력이 동시에 발생합니다. 하나의 경보만 사용하면 과잉 대응하거나 중요한 충돌 신호를 놓칠 수 있습니다.
 
-FastAPI는 입력을 Canonical Fact로 정규화해 NEO Rule KB에 전달합니다. NEO는 ATMS로 가정과 충돌 근거를 관리하고 CF로 판단 강도를 계산한 뒤, 후속 규칙을 통해 위험도와 대응 가이드를 단계적으로 생성합니다. 최종 결과만 보여주지 않고 Neo4j 관계 계보와 NEMI 문서 근거를 함께 연결해 운영자가 판단 과정을 확인하도록 구성했습니다.
+FastAPI는 입력을 Canonical Fact로 정규화해 NEO Rule KB에 전달합니다. NEO는 ATMS로 가정과 충돌 근거를 관리하고 CF로 판단 강도를 계산한 뒤, 후속 규칙을 통해 위험도와 대응 가이드를 단계적으로 생성합니다. Neo4j 관계 계보와 NEMI 문서 근거를 연결해 운영자가 판단 생성 과정을 확인할 수 있게 했습니다.
 
 | 영역 | 구현 결과 |
 | --- | --- |
@@ -68,7 +68,7 @@ FastAPI는 입력을 Canonical Fact로 정규화해 NEO Rule KB에 전달합니�
 6. 관제자가 근거를 검토한 뒤 VMS 조치를 준비하거나 오탐 처리를 요청합니다.
 7. 판단·근거·조치 상태를 감사 ID와 함께 보존하고 이력 화면에서 재현합니다.
 
-최종 조치는 자동 송출하지 않습니다. NEO가 판단하고 운영자가 검토·승인하는 경계를 유지합니다.
+최종 조치는 운영자 검토와 승인을 거쳐 송출합니다. NEO는 판단을 담당하고 운영자는 실행을 승인합니다.
 
 ### 대표 시연 사건
 
@@ -108,7 +108,7 @@ flowchart LR
 | NEMI | 프로젝트 내부 명칭의 VectorDB RAG, 운영 문서 근거 검색 |
 | Qdrant | NEMI 임베딩과 유사도 검색 저장소 |
 | Vue 3 + TypeScript | 사건 선택, 근거 검토, 조치와 감사 이력 UI |
-| 설명 모델 (선택) | 로컬 Gemma4 또는 AWS Bedrock Nova 2 Lite로 설명, NEO 판단 변경 권한 없음 |
+| 설명 모델 (선택) | 로컬 Gemma4 또는 AWS Bedrock Nova 2 Lite로 현재 판단과 근거를 읽기 전용으로 설명 |
 
 ## 구현 상세
 
@@ -123,25 +123,25 @@ flowchart LR
 
 - Neo4j API로 실제 그래프를 저장·조회하며 선택 노드와 판단 경로를 분리해 탐색합니다.
 - NEMI는 Qdrant에서 SOP, VMS 정책, TAAS 사고 이력 등 판단과 관련된 문서를 검색합니다.
-- Neo4j와 NEMI는 근거를 제공할 뿐 NEO의 결론을 생성하거나 덮어쓰지 않습니다.
+- Neo4j와 NEMI는 NEO 판단에 연결된 관계와 문서 근거 조회를 담당합니다.
 
 ### 운영 안전과 감사
 
 - 판단 실행, 계보 확인, 문서 근거 확인, 조치 준비를 명시적 단계로 분리했습니다.
-- 운영자 승인 전에는 VMS 조치를 자동 송출하지 않습니다.
+- VMS 조치는 운영자 승인 후 송출 단계로 전환합니다.
 - 사건, 판단, 선택 근거, 조치 상태와 감사 ID를 함께 저장해 이후 재현할 수 있습니다.
 
 ### 읽기 전용 판단 설명
 
 - 현재 Decision Package, Neo4j 판단 관계와 NEMI 문서 근거만 설명 입력으로 사용합니다.
 - 로컬·GPU 환경은 Gemma4, AWS 데모는 Amazon Nova 2 Lite를 사용합니다.
-- 설명 모델은 NEO가 정한 판단, 우선순위, 신뢰도와 권고 조치를 변경할 수 없습니다.
+- 설명 모델의 역할은 NEO가 정한 판단, 우선순위, 신뢰도와 권고 조치의 읽기 전용 설명으로 제한합니다.
 
 ### 예지 및 이상 분석
 
 - 설비 4종과 교통 2종 시나리오를 동일 API에서 실행하고 분석 단계를 화면에서 확인합니다.
 - NumPy LSTM 잔차와 Z-score 3σ 기준선을 Canonical Fact로 변환해 NEO 판단에 연결합니다.
-- AI4I는 학습 모델이 아닌 참조 규칙이며, C-MAPSS RUL은 대상 설비에 보정되지 않은 시뮬레이션 기준값임을 화면과 API에 명시합니다.
+- AI4I는 참조 규칙으로 적용하고 C-MAPSS RUL은 시뮬레이션 기준값으로 구분해 화면과 API에 표시합니다.
 
 ## 데모 확인
 
@@ -157,7 +157,7 @@ flowchart LR
 | NEO FastAPI | [`kimmj6466/neo-operator-api:v1.0.0`](https://hub.docker.com/r/kimmj6466/neo-operator-api) |
 | NEMI API | [`kimmj6466/neo-nemi-api:v1.0.0`](https://hub.docker.com/r/kimmj6466/neo-nemi-api) |
 
-AWS 실행본은 태그 변경의 영향을 받지 않도록 위 이미지의 v1.0.0 다이제스트를 고정해 사용합니다.
+AWS 실행본은 위 Docker Hub v1.0.0 이미지를 배포 설정에 고정해 사용합니다.
 
 ## 배포와 검증
 
@@ -201,4 +201,4 @@ NEMI retrieves document evidence.
 LLM explains.
 ```
 
-Neo4j, NEMI, LLM과 Vue는 NEO의 판단을 생성하거나 변경하지 않습니다.
+판단 권한은 NEO에 두고 Neo4j는 관계 조회, NEMI는 문서 검색, LLM은 설명, Vue는 화면 표현을 담당합니다.
