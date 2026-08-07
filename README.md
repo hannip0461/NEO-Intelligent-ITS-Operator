@@ -2,7 +2,7 @@
 
 단일 수치나 알람만으로는 현장 상황을 정확히 판단하기 어렵습니다. NEO는 여러 관제 입력을 종합해 위험도를 판단하고, 판단 근거와 대응 가이드까지 함께 제공하는 지능형 관제 시스템입니다.
 
-> `NEO`는 이 프로젝트에서 명명한 자체 규칙 추론 엔진입니다. Rule KB, ATMS(Assumption-based Truth Maintenance System), CF(Certainty Factor)를 결합해 판단합니다.
+> 학부 시절 학습과 튜닝에 참여했던 NEO 규칙 추론 엔진을 사용했습니다. ITS 관제 입력 정규화, 판단 근거 연동, 운영 화면과 AWS 배포는 개인 프로젝트에서 구현했습니다.
 
 - **AWS 데모:** https://3-38-33-156.sslip.io/neo
 - **최신 릴리즈:** https://github.com/hannip0461/NEO-Intelligent-ITS-Operator/releases/tag/v2.0.0
@@ -27,8 +27,8 @@ FastAPI는 입력을 Canonical Fact로 정규화해 NEO Rule KB에 전달합니�
 | --- | --- |
 | 입력 정규화 | ITS CSV, 교통 API, CCTV, VMS, TAAS 입력을 Canonical Fact로 변환 |
 | 규칙 추론 | NEO Rule KB + ATMS + CF 기반 다단계 파생 Fact 생성 |
-| 관계 근거 | Neo4j 실제 노드·관계로 Fact → Rule → Decision 계보 조회 |
-| 문서 근거 | NEMI VectorDB RAG로 SOP·정책·사고 이력 검색 |
+| 관계 근거 | Neo4j 실제 노드와 관계로 Fact → Rule → Decision 계보 조회 |
+| 문서 근거 | NEMI VectorDB RAG로 SOP, 정책, 사고 이력 검색 |
 | 판단 설명 | 선택한 Decision Package와 연결 근거를 읽기 전용으로 설명 |
 | 운영 검토 | 판단 재실행, 근거 선택, 조치 준비, 오탐 요청과 감사 이력 제공 |
 | 예지 및 이상 분석 | LSTM 잔차, 통계 기준선, AI4I 참조 규칙, C-MAPSS 참조 RUL을 Canonical Fact와 NEO 판단으로 연결 |
@@ -41,13 +41,13 @@ FastAPI는 입력을 Canonical Fact로 정규화해 NEO Rule KB에 전달합니�
 3. NEO가 Rule KB, ATMS, CF를 적용해 Decision Package를 생성합니다.
 4. Neo4j에서 판단 계보를 조회하고 NEMI에서 관련 문서 근거를 검색합니다.
 5. 관제자가 근거를 검토한 뒤 VMS 조치를 준비하거나 오탐 처리를 요청합니다.
-6. 판단·근거·조치 상태를 감사 ID와 함께 보존하고 이력 화면에서 재현합니다.
+6. 판단, 근거, 조치 상태를 감사 ID와 함께 보존하고 이력 화면에서 재현합니다.
 
-최종 조치는 자동 송출하지 않습니다. NEO가 판단하고 운영자가 검토·승인하는 경계를 유지합니다.
+최종 조치는 자동 송출하지 않습니다. NEO가 판단하고 운영자가 검토하고 승인하는 경계를 유지합니다.
 
 ### 대표 시연 사건 5개
 
-| 사건 | 입력 충돌·상태 | 실제 NEO 판단 |
+| 사건 | 입력 충돌과 상태 | 실제 NEO 판단 |
 | --- | --- | --- |
 | INC-9902 연쇄 추돌 위험 | 정체 + CCTV 시야 제한 | 운영자 승인 필요 |
 | INC-9901 낙하물 의심 | 레이더 단독 감지 | 관찰 후 재확인 |
@@ -87,7 +87,7 @@ flowchart TB
 | --- | --- |
 | NEO Engine | 규칙 매칭, 충돌 관리, CF 계산과 파생 Fact 생성 |
 | FastAPI | 입력 정규화, NEO 실행과 외부 연동 조율 |
-| Neo4j | Fact·Rule·Decision 관계 저장과 XAI 계보 조회 |
+| Neo4j | Fact, Rule, Decision 관계 저장과 XAI 계보 조회 |
 | NEMI | 프로젝트에서 명명한 Qdrant 기반 VectorDB RAG, 운영 문서 근거 검색 |
 | Qdrant | NEMI 임베딩과 유사도 검색 저장소 |
 | Vue 3 + TypeScript | 사건 선택, 근거 검토, 조치와 감사 이력 UI |
@@ -99,12 +99,12 @@ flowchart TB
 
 - 원시 입력을 스키마 검증된 Canonical Fact로 변환합니다.
 - Fact가 Rule을 활성화하고, 파생 Fact가 다음 Rule에 다시 적용되는 다단계 추론을 수행합니다.
-- ATMS가 가정·지지·충돌 집합을 관리하고 CF가 복수 근거의 판단 강도를 계산합니다.
+- ATMS가 가정, 지지, 충돌 집합을 관리하고 CF가 복수 근거의 판단 강도를 계산합니다.
 - `Decision Package`에 KB 버전, Rule Set 버전과 KB SHA-256을 기록해 판단 시점의 지식 기준을 고정합니다.
 
-### 관계·문서 근거
+### 관계와 문서 근거
 
-- Neo4j API로 실제 그래프를 저장·조회하며 선택 노드와 판단 경로를 분리해 탐색합니다.
+- Neo4j API로 실제 그래프를 저장하고 조회하며 선택 노드와 판단 경로를 분리해 탐색합니다.
 - NEMI는 Qdrant에서 SOP, VMS 정책, TAAS 사고 이력 등 판단과 관련된 문서를 검색합니다.
 - Neo4j와 NEMI는 근거를 제공할 뿐 NEO의 결론을 생성하거나 덮어쓰지 않습니다.
 
@@ -175,7 +175,7 @@ docker compose -f docker-compose.neo.yml down
 | [AWS EC2 배포 기록](docs/deployment/AWS_EC2_DEPLOYMENT.md) | 인스턴스 생성부터 Docker Compose, HTTPS 적용까지의 화면 기록 |
 | [AWS EC2 배포 기록 PDF](docs/deployment/NEO_AWS_DEPLOYMENT_RECORD.pdf) | 배포 과정을 정리한 PDF |
 | [Canonical Fact 스키마](docs/design/CANONICAL_FACT_SCHEMA.md) | 외부 입력 정규화 계약 |
-| [Decision Package 스키마](docs/design/DECISION_PACKAGE_SCHEMA.md) | 판단·근거·버전 추적 계약 |
+| [Decision Package 스키마](docs/design/DECISION_PACKAGE_SCHEMA.md) | 판단, 근거, 버전 추적 계약 |
 | [Workspace 개발 가이드](docs/WORKSPACE_GUIDE.md) | 개발 기준, 런타임 입력과 작업 순서 |
 
 ## 저장소 구조
@@ -183,12 +183,12 @@ docker compose -f docker-compose.neo.yml down
 ```text
 frontend/apps/neo/  Vue 3 + TypeScript 관제 UI
 src/api/            FastAPI 오케스트레이션 API
-src/neo/            NEO 실행·검증·출력 매핑
+src/neo/            NEO 실행, 검증, 출력 매핑
 src/integrations/   Neo4j, NEMI, LLM 연동 경계
 kb/                 NEO Rule KB와 메타데이터
-tests/              단위·통합·스모크 검증
+tests/              단위, 통합, 스모크 검증
 deploy/             Dockerfile과 Nginx 설정
-docs/               설계·배포·작업 기준 문서
+docs/               설계, 배포, 작업 기준 문서
 ```
 
 ## 판단 권한 원칙
